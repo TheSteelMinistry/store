@@ -17,8 +17,9 @@ jobs:
       - name: Install unique-names-generator
         run: npm install unique-names-generator
 
-      - name: Generate codename
-        id: codename
+      - name: Generate release codename
+        id: release-codename
+        if: ${{ github.event_name == 'merge' }}
         run: |
           CODENAME=$(node -e "
             const { uniqueNamesGenerator, adjectives, animals } = require('unique-names-generator');
@@ -31,6 +32,12 @@ jobs:
             console.log(name);
           ")
           echo "CODENAME=$CODENAME" >> $GITHUB_ENV
+
+      - name: Generate release candidate codename
+        id: release-candidate-codename
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          echo "CODENAME=rc-${{ github.run_number }}" >> $GITHUB_ENV
 
       - name: Build version string
         id: version
