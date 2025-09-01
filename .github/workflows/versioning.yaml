@@ -8,36 +8,28 @@ jobs:
   generate-version:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Install dependencies
-        run: npm install unique-names-generator
+      - name: Generate codename
+        id: codename
+        run: |
+          CODENAME=$(npx --yes unique-names-generator \
+            --dictionaries adjectives animals \
+            --separator "-" \
+            --length 2 \
+            --style lowerCase)
+          echo "CODENAME=$CODENAME" >> $GITHUB_ENV
 
-      - name: Generate version
+      - name: Build version string
         id: version
         run: |
-            TS_SCRIPT=$(cat <<'EOF'
-            const { uniqueNamesGenerator, adjectives, animals } = require('unique-names-generator');
-            const name = uniqueNamesGenerator({
-            dictionaries: [adjectives, animals],
-            separator: '-',
-            length: 2,
-            style: 'lowerCase',
-            seed: process.env.GITHUB_REF  // optional: deterministic per PR
-            });
-            console.log(name);
-            EOF
-            )
-            CODENAME=$(node -e "$TS_SCRIPT")
-            VERSION=$(date +"%Y.%m.%d.%H.%M")
-            PR=${{ github.event.pull_request.number }}
-            echo "VERSION=${VERSION}-${PR}-${CODENAME}" >> $GITHUB_ENV
+          TIMESTAMP=$(date +"%Y.%m.%d.%H.%M")
+          PR=${{ github.event.pull_request.number }}
+          echo "VERSION=${TIMESTAMP}-pr${PR}-${CODENAME}" >> $GITHUB_ENV
 
       - name: Show version
         run: echo "Final version is $VERSION"
