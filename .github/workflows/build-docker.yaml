@@ -54,4 +54,4 @@ jobs:
           file: src/Store.Client.Web/Dockerfile
           push: ${{ inputs.PUSH }}
           tags: |
-            store-client-web:${{ inputs.IMAGE_TAG }}
+            ${{ secrets.REPOSITORY_USERNAME }}/${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}
