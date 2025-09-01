@@ -14,14 +14,22 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Install unique-names-generator
+        run: npm install unique-names-generator
+
       - name: Generate codename
         id: codename
         run: |
-          CODENAME=$(npx --yes unique-names-generator \
-            --dictionaries adjectives animals \
-            --separator "-" \
-            --length 2 \
-            --style lowerCase)
+          CODENAME=$(node -e "
+            const { uniqueNamesGenerator, adjectives, animals } = require('unique-names-generator');
+            const name = uniqueNamesGenerator({
+              dictionaries: [adjectives, animals],
+              separator: '-',
+              length: 2,
+              style: 'lowerCase',
+            });
+            console.log(name);
+          ")
           echo "CODENAME=$CODENAME" >> $GITHUB_ENV
 
       - name: Build version string
