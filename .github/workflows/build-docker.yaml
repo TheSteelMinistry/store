@@ -25,6 +25,11 @@ on:
         required: false
         type: string
         default: '.'
+    secrets:
+      REPOSITORY_USERNAME:
+        description: 'Repository username.'
+      REPOSITORY_TOKEN:
+        description: 'Repository access token.'
 
 jobs:
   build:
@@ -32,6 +37,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
