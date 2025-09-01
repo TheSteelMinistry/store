@@ -10,13 +10,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
-      - name: Generate version string
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install unique-names-generator
+
+      - name: Generate version
         id: version
         run: |
-          VERSION=$(date +"%Y.%m.%d.%H.%M")
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          echo "VERSION=${VERSION}-pr${PR_NUMBER}" >> $GITHUB_ENV
+            TS_SCRIPT=$(cat <<'EOF'
+            const { uniqueNamesGenerator, adjectives, animals } = require('unique-names-generator');
+            const name = uniqueNamesGenerator({
+            dictionaries: [adjectives, animals],
+            separator: '-',
+            length: 2,
+            style: 'lowerCase',
+            seed: process.env.GITHUB_REF  // optional: deterministic per PR
+            });
+            console.log(name);
+            EOF
+            )
+            CODENAME=$(node -e "$TS_SCRIPT")
+            VERSION=$(date +"%Y.%m.%d.%H.%M")
+            PR=${{ github.event.pull_request.number }}
+            echo "VERSION=${VERSION}-${PR}-${CODENAME}" >> $GITHUB_ENV
 
       - name: Show version
         run: echo "Final version is $VERSION"
