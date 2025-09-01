@@ -1,18 +1,32 @@
 name: Generate version number
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_call: 
+    inputs:
+      RUNS_ON:
+        description: 'The type of machine to run on. Defaults to ubuntu-24.04.'
+        default: ubuntu-24.04
+        type: string
+      NODE_VERSION:
+        description: 'The Node.js version to use. Defaults to 22.'
+        default: '22'
+        type: string
+    outputs:
+      VERSION:
+        description: 'The generated version.'
+        value: ${{ jobs.generate-version.outputs.VERSION }}
 
 jobs:
   generate-version:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.RUNS_ON }}
+    outputs:
+        VERSION: ${{ steps.version.outputs.VERSION }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ inputs.NODE_VERSION }}
 
       - name: Install unique-names-generator
         run: npm install unique-names-generator
@@ -45,6 +59,3 @@ jobs:
           TIMESTAMP=$(date +"%Y%m%d.%H%M")
           PR=${{ github.event.pull_request.number }}
           echo "VERSION=${TIMESTAMP}.${PR}-${CODENAME}" >> $GITHUB_ENV
-
-      - name: Show version
-        run: echo "Final version is $VERSION"

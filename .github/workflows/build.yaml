@@ -1,0 +1,33 @@
+name: Build Application
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  generate-version:
+    uses: ./.github/workflows/versioning.yaml
+    with:
+      RUNS_ON: ubuntu-24.04
+      NODE_VERSION: '22'
+
+  build:
+    runs-on: ubuntu-24.04
+    needs: generate-version
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/Store.Client.Web/Dockerfile
+          push: false
+          tags: |
+            store-client-web:latest
+            store-client-web:${{ needs.generate-version.outputs.VERSION }}
