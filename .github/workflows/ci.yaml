@@ -21,5 +21,5 @@ jobs:
       PUSH: true
       BUILD_CONTEXT: .
     secrets:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+      REPOSITORY_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      REPOSITORY_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
