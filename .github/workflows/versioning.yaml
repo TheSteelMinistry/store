@@ -33,7 +33,7 @@ jobs:
 
       - name: Generate release codename
         id: release-codename
-        if: ${{ github.event_name == 'merge' }}
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged }}
         run: |
           CODENAME=$(node -e "
             const { uniqueNamesGenerator, adjectives, animals } = require('unique-names-generator');
@@ -49,7 +49,7 @@ jobs:
 
       - name: Generate release candidate codename
         id: release-candidate-codename
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
         run: |
           echo "CODENAME=rc-${{ github.run_number }}" >> $GITHUB_ENV
 
