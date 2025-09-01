@@ -1,0 +1,22 @@
+name: CI - Application Web
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  generate-version:
+    uses: ./.github/workflows/versioning.yaml
+    with:
+      RUNS_ON: ubuntu-24.04
+      NODE_VERSION: '22'
+  build-image:
+    needs: generate-version
+    uses: ./.github/workflows/build-docker.yaml
+    with:
+      RUNS_ON: ubuntu-24.04
+      IMAGE_NAME: store-client-web
+      IMAGE_TAG: ${{ needs.generate-version.outputs.VERSION }}
+      PUSH: false
+      BUILD_CONTEXT: .
