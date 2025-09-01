@@ -58,4 +58,6 @@ jobs:
         run: |
           TIMESTAMP=$(date +"%Y%m%d.%H%M")
           PR=${{ github.event.pull_request.number }}
+          VERSION="${TIMESTAMP}.${PR}-${CODENAME}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
