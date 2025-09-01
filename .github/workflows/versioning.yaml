@@ -1,0 +1,22 @@
+name: Generate version number
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  generate-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Generate version string
+        id: version
+        run: |
+          VERSION=$(date +"%Y.%m.%d.%H.%M")
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          echo "VERSION=${VERSION}-pr${PR_NUMBER}" >> $GITHUB_ENV
+
+      - name: Show version
+        run: echo "Final version is $VERSION"
