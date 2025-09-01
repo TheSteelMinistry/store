@@ -1,22 +1,63 @@
 name: Generate version number
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_call: 
+    inputs:
+      RUNS_ON:
+        description: 'The type of machine to run on. Defaults to ubuntu-24.04.'
+        default: ubuntu-24.04
+        type: string
+      NODE_VERSION:
+        description: 'The Node.js version to use. Defaults to 22.'
+        default: '22'
+        type: string
+    outputs:
+      VERSION:
+        description: 'The generated version.'
+        value: ${{ jobs.generate-version.outputs.VERSION }}
 
 jobs:
   generate-version:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.RUNS_ON }}
+    outputs:
+        VERSION: ${{ steps.version.outputs.VERSION }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Generate version string
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+
+      - name: Install unique-names-generator
+        run: npm install unique-names-generator
+
+      - name: Generate release codename
+        id: release-codename
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged }}
+        run: |
+          CODENAME=$(node -e "
+            const { uniqueNamesGenerator, adjectives, animals } = require('unique-names-generator');
+            const name = uniqueNamesGenerator({
+              dictionaries: [adjectives, animals],
+              separator: '-',
+              length: 2,
+              style: 'lowerCase',
+            });
+            console.log(name);
+          ")
+          echo "CODENAME=$CODENAME" >> $GITHUB_ENV
+
+      - name: Generate release candidate codename
+        id: release-candidate-codename
+        if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+        run: |
+          echo "CODENAME=rc-${{ github.run_number }}" >> $GITHUB_ENV
+
+      - name: Build version string
         id: version
         run: |
-          VERSION=$(date +"%Y.%m.%d.%H.%M")
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          echo "VERSION=${VERSION}-pr${PR_NUMBER}" >> $GITHUB_ENV
-
-      - name: Show version
-        run: echo "Final version is $VERSION"
+          TIMESTAMP=$(date +"%Y%m%d.%H%M")
+          PR=${{ github.event.pull_request.number }}
+          VERSION="${TIMESTAMP}.${PR}-${CODENAME}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
