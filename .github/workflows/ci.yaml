@@ -30,7 +30,11 @@ jobs:
       AWS_ROLE_ARN: arn:aws:iam::120915929317:role/repository-store
       AWS_ACCOUNT_ID: 120915929317
       AWS_REGION: eu-north-1
-
+    secrets:
+      BUILD_ARGUMENTS: '{
+          "EXPOSED_PORT": "8080"
+        }'
+        
   fire-event:
     needs: build-image
     runs-on: ubuntu-24.04

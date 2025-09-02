@@ -42,10 +42,6 @@ on:
         required: true
         type: string
     secrets:
-      AWS_ACCESS_KEY_ID:
-        description: 'AWS access key ID of the credentials allowed to assume the role.'
-      AWS_SECRET_ACCESS_KEY:
-        description: 'AWS secret access key of the credentials allowed to assume the role.'
       BUILD_ARGUMENTS:
         description: 'Build arguments to pass to the Docker build.'
         required: false
