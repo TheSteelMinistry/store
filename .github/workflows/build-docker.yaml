@@ -46,10 +46,14 @@ on:
         description: 'AWS access key ID of the credentials allowed to assume the role.'
       AWS_SECRET_ACCESS_KEY:
         description: 'AWS secret access key of the credentials allowed to assume the role.'
+      BUILD_ARGUMENTS:
+        description: 'Build arguments to pass to the Docker build.'
+        required: false
     outputs:
       IMAGE_URI:
         description: 'The full URI of the built Docker image.'
         value: ${{ jobs.build.outputs.IMAGE_URI }}
+
 jobs:
   build:
     runs-on: ${{ inputs.RUNS_ON }}
@@ -87,3 +91,5 @@ jobs:
           push: ${{ inputs.PUSH }}
           tags: |
             ${{ steps.generate-full-image-name.outputs.IMAGE_NAME }}
+          build-args: |
+            ${{ fromJSON(secrets.BUILD_ARGUMENTS || '{}') }}
