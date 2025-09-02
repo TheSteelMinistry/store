@@ -1,10 +1,10 @@
-name: Build Application
+name: Build Docker Image
 
 on:
   workflow_call:
     inputs:
       RUNS_ON:
-        description: 'The type of machine to run on. Defaults to ubuntu-24.04.'
+        description: 'The type of machine to run on.'
         required: true
         type: string
         default: ubuntu-24.04
@@ -20,16 +20,32 @@ on:
         description: 'Whether to push the Docker image to the registry.'
         required: true
         type: boolean
-      BUILD_CONTEXT:
-        description: 'The context path for the Docker build. Defaults to the root of the repository.'
+      BUILD_CONTEXT_PATH:
+        description: 'The context path for the Docker build.'
         required: false
         type: string
         default: '.'
+      DOCKERFILE_PATH:
+        description: 'The path to the Dockerfile.'
+        required: true
+        type: string
+      AWS_ACCOUNT_ID:
+        description: 'AWS account ID containing the ECR repository.'
+        required: true
+        type: string
+      AWS_ROLE_ARN:
+        description: 'ARN of the role to assume for pushing to ECR.'
+        required: true
+        type: string
+      AWS_REGION:
+        description: 'AWS region of the ECR repository.'
+        required: true
+        type: string
     secrets:
-      REPOSITORY_USERNAME:
-        description: 'Repository username.'
-      REPOSITORY_TOKEN:
-        description: 'Repository access token.'
+      AWS_ACCESS_KEY_ID:
+        description: 'AWS access key ID of the credentials allowed to assume the role.'
+      AWS_SECRET_ACCESS_KEY:
+        description: 'AWS secret access key of the credentials allowed to assume the role.'
 
 jobs:
   build:
@@ -38,20 +54,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
         with:
-          username: ${{ secrets.REPOSITORY_USERNAME }}
-          password: ${{ secrets.REPOSITORY_TOKEN }}
+          role-to-assume: ${{ inputs.AWS_ROLE_ARN }}
+          aws-region: ${{ inputs.AWS_REGION }}
+          role-session-name: github-actions-ecr
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Build & Push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: src/Store.Client.Web/Dockerfile
+          context: ${{ inputs.BUILD_CONTEXT_PATH }}
+          file: ${{ inputs.DOCKERFILE_PATH }}
           push: ${{ inputs.PUSH }}
           tags: |
-            ${{ secrets.REPOSITORY_USERNAME }}/${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}
+            ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com/${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}

@@ -20,7 +20,8 @@ jobs:
       IMAGE_NAME: store-client-web
       IMAGE_TAG: ${{ needs.generate-version.outputs.VERSION }}
       PUSH: true
-      BUILD_CONTEXT: .
-    secrets:
-      REPOSITORY_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-      REPOSITORY_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+      BUILD_CONTEXT_PATH: .
+      DOCKERFILE_PATH: src/Store.Client.Web/Dockerfile
+      AWS_ROLE_ARN: arn:aws:iam::120915929317:role/Github-Store
+      AWS_ACCOUNT_ID: 120915929317
+      AWS_REGION: eu-north-1
