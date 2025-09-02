@@ -16,6 +16,7 @@ jobs:
     with:
       RUNS_ON: ubuntu-24.04
       NODE_VERSION: '22'
+
   build-image:
     needs: generate-version
     uses: ./.github/workflows/build-docker.yaml
@@ -29,3 +30,18 @@ jobs:
       AWS_ROLE_ARN: arn:aws:iam::120915929317:role/repository-store
       AWS_ACCOUNT_ID: 120915929317
       AWS_REGION: eu-north-1
+
+  fire-event:
+    needs: build-image
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Generate deployment event
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          repository: TheSteelMinistry/gitops-demo
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: new-image
+          client-payload: '{
+              "workload": "store",
+              "image": "${{ needs.build-image.outputs.IMAGE_URI }}"
+            }'
