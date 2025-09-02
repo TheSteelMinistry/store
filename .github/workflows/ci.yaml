@@ -21,7 +21,7 @@ jobs:
     uses: ./.github/workflows/build-docker.yaml
     with:
       RUNS_ON: ubuntu-24.04
-      IMAGE_NAME: store-client-web
+      IMAGE_NAME: store/web
       IMAGE_TAG: ${{ needs.generate-version.outputs.VERSION }}
       PUSH: true
       BUILD_CONTEXT_PATH: .
