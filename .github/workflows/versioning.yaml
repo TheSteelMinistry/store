@@ -11,6 +11,11 @@ on:
         description: 'The Node.js version to use. Defaults to 22.'
         default: '22'
         type: string
+      FLAVOUR:
+        description: 'The flavour of the application.'
+        default: ''
+        type: string
+        required: false
     outputs:
       VERSION:
         description: 'The generated version.'
@@ -59,5 +64,10 @@ jobs:
           TIMESTAMP=$(date +"%Y%m%d.%H%M")
           PR=${{ github.event.pull_request.number }}
           VERSION="${TIMESTAMP}.${PR}-${CODENAME}"
+
+          if [ -n "${{ inputs.FLAVOUR }}" ]; then
+            VERSION="${VERSION}-${{ inputs.FLAVOUR }}"
+          fi
+
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT

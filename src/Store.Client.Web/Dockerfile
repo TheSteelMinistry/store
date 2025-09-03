@@ -18,9 +18,12 @@ RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 # STAGE 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+
+ARG EXPOSED_PORT
+
 WORKDIR /app
 COPY --from=build /app/publish .
 
-EXPOSE 8080
+EXPOSE ${EXPOSED_PORT}
 
 ENTRYPOINT ["dotnet", "Store.Client.Web.dll"]
