@@ -43,7 +43,7 @@ on:
         type: string
     secrets:
       BUILD_ARGUMENTS:
-        description: 'Build arguments to pass to the Docker build.'
+        description: 'Build arguments to pass to the Docker build. Should be a JSON object. For example {"EXPOSED_PORT": "8080"}.'
         required: false
     outputs:
       IMAGE_URI:
